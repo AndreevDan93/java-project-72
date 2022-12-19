@@ -11,7 +11,7 @@ public class App {
     }
 
     private static void addRoutes(Javalin app) {
-        app.get("/", ctx -> ctx.result("hello world"));
+        app.get("/", ctx -> ctx.result("улыбнись, красотка"));
     }
 
     private static Javalin getApp() {
