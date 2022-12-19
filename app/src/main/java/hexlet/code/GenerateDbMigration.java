@@ -4,7 +4,7 @@ import io.ebean.annotation.Platform;
 import io.ebean.dbmigration.DbMigration;
 import java.io.IOException;
 
-public class GenerateDbMigration {
+public final class GenerateDbMigration {
 
     /**
      * Generate the DDL for the next DB migration.
