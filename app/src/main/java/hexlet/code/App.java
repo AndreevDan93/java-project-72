@@ -1,5 +1,6 @@
 package hexlet.code;
 
+import hexlet.code.controllers.WelcomeController;
 import io.javalin.Javalin;
 
 
@@ -10,8 +11,12 @@ public class App {
         return Integer.valueOf(port);
     }
 
+    private static String getMode() {
+        return System.getenv().getOrDefault("APP_ENV", "development");
+    }
+
     private static void addRoutes(Javalin app) {
-        app.get("/", ctx -> ctx.result("улыбнись, красотка"));
+        app.get("/", ctx -> ctx.result("Welcome"));
     }
 
     private static Javalin getApp() {

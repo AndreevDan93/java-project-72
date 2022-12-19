@@ -3,6 +3,7 @@ plugins {
     id 'checkstyle'
     id 'jacoco'
     id 'application'
+    id('io.ebean') version '12.15.1'
 }
 
 group 'hexlet.code'
@@ -13,6 +14,7 @@ repositories {
 }
 compileJava {
     options.release = 17
+    options.encoding = 'UTF-8'
 }
 checkstyle {
     toolVersion '10.0'
@@ -23,13 +25,26 @@ application {
 
 
 dependencies {
-//    Javalin
+//  Javalin
     implementation 'io.javalin:javalin:5.2.0'
-//    logger
+//  logger
     implementation 'org.slf4j:slf4j-simple:2.0.6'
+//  ebean
+    implementation 'io.ebean:ebean:12.15.1'
+    implementation 'io.ebean:ebean-ddl-generator:12.15.1'
+    implementation 'io.ebean:ebean-querybean:12.15.1'
+    implementation 'io.ebean:ebean-migration:12.15.1'
+    implementation 'io.ebean:ebean-annotation:7.7'
+    annotationProcessor 'io.ebean:querybean-generator:12.15.1'
+    // NOTE: ebean-ddl-generator требует старые зависимости, которых нет в java 9 и выше
+    implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.5'
+    implementation 'javax.activation:activation:1.1.1'
+//  dataBase
+    implementation 'com.h2database:h2:2.1.210'
+    implementation 'org.postgresql:postgresql:42.3.3'
 
 
-//    tests
+//  tests
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
     testImplementation(
             'org.junit.jupiter:junit-jupiter-params:5.8.2',
@@ -54,5 +69,12 @@ test {
     useJUnitPlatform()
     finalizedBy jacocoTestReport
 }
+
+task generateMigrations(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'hexlet.code.GenerateDBMigration'
+}
+task stage(dependsOn: ['clean', 'installDist'])
+installDist.mustRunAfter clean
 
 
