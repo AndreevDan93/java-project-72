@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'checkstyle'
     id 'jacoco'
+    id 'application'
 }
 
 group 'hexlet.code'
@@ -16,14 +17,16 @@ compileJava {
 checkstyle {
     toolVersion '10.0'
 }
+application {
+    mainClass = 'hexlet.code.App'
+}
+
 
 dependencies {
-
-
-
-
-
-
+//    Javalin
+    implementation 'io.javalin:javalin:5.2.0'
+//    logger
+    implementation 'org.slf4j:slf4j-simple:2.0.6'
 
 
 //    tests
