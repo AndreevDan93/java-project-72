@@ -21,8 +21,8 @@ public class App {
     }
 
     public static void main(String[] args) {
-        var app = Javalin.create(/*config*/)
-                .get("/", ctx -> ctx.result("Hello World"))
-                .start(getPort());
+        var app = getApp();
+        addRoutes(app);
+        app.start(getPort());
     }
 }
