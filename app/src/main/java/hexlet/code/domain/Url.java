@@ -19,4 +19,7 @@ public class Url extends Model {
     @Getter
     @WhenCreated
     private Instant createdAt;
+
+    public Url(String correctUrl) {
+    }
 }

@@ -6,9 +6,6 @@ import java.io.IOException;
 
 public final class GenerateDbMigration {
 
-    /**
-     * Generate the DDL for the next DB migration.
-     */
     public static void main(String[] args) throws IOException {
 
         DbMigration dbMigration = DbMigration.create();
