@@ -4,26 +4,28 @@ import io.ebean.Model;
 import io.ebean.annotation.WhenCreated;
 import lombok.Getter;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Lob;
-import javax.persistence.ManyToOne;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.time.Instant;
-@Getter
+
 @Entity
 public final class UrlCheck extends Model {
+    @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+    @Getter
     private int statusCode;
+    @Getter
     private String title;
+    @Getter
     private String h1;
+    @Getter
     @Lob
     private String description;
+    @Getter
     @ManyToOne
     private Url url;
+    @Getter
     @WhenCreated
     private Instant createdAt;
 
