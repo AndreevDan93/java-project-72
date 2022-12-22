@@ -111,6 +111,7 @@ public final class AppTest {
         assertThat(responsePost.getStatus()).isEqualTo(HttpServletResponse.SC_FOUND);
 
         response = Unirest.get(baseUrl + "/urls/1").asString();
+        
         assertThat(response.getBody()).contains("Страница успешно проверена");
         assertThat(response.getBody())
                 .contains("Поиск информации в интернете: веб страницы, картинки, видео и многое другое.");
