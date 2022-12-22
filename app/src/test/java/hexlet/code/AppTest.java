@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import static hexlet.code.App.getApp;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-public class AppTest {
+public final class AppTest {
     private static Javalin app;
     private static String baseUrl;
 
