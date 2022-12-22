@@ -19,7 +19,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 public final class AppTest {
     private static Javalin app;
     private static String baseUrl;
-    private static final String EXPECTED_URL = "http://www.google.com";
+    private static final String EXPECTED_URL = "https://www.example.com";
     private static final String CORRECT_URL = "https://ru.hexlet.io";
     private static final String INCORRECT_URL = "www.rock.ru";
 
@@ -113,7 +113,7 @@ public final class AppTest {
         response = Unirest.get(baseUrl + "/urls/1").asString();
         assertThat(response.getBody()).contains("Страница успешно проверена");
         assertThat(response.getBody())
-                .contains("Поиск информации в интернете: веб страницы, картинки, видео и многое другое.");
+                .contains("Example Domain");
 
     }
 
