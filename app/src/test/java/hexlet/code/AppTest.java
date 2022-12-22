@@ -11,12 +11,17 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.servlet.http.HttpServletResponse;
+
 import static hexlet.code.App.getApp;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public final class AppTest {
     private static Javalin app;
     private static String baseUrl;
+    private static final String expectedUrl = "http://www.google.com";
+    private static final String correctUrl = "https://ru.hexlet.io";
+    private static final String incorrectUrl = "www.rock.ru";
 
     @BeforeAll
     public static void beforeAll() {
@@ -34,20 +39,82 @@ public final class AppTest {
     public void beforeEach() {
         Database db = DB.getDefault();
         db.script().run("/truncate.sql");
-        String extendsUrl = "http://www.google.com";
-        Url url = new Url(extendsUrl);
+        Url url = new Url(expectedUrl);
         url.save();
     }
 
     @Test
+    public void testWelcome() {
+        HttpResponse<String> response = Unirest.get(baseUrl).asString();
+        assertThat(response.getStatus()).isEqualTo(200);
+    }
+
+    @Test
     public void testListUrls() {
-        HttpResponse<String> response = Unirest
-                .get(baseUrl + "/urls")
-                .asString();
+        HttpResponse<String> response = Unirest.get(baseUrl + "/urls").asString();
         String body = response.getBody();
 
         assertThat(response.getStatus()).isEqualTo(200);
-        assertThat(body).contains("http://www.google.com");
+        assertThat(body).contains(expectedUrl);
+    }
+
+    @Test
+    public void testShowUrlId() {
+        HttpResponse<String> response = Unirest.get(baseUrl + "/urls/1").asString();
+
+        String body = response.getBody();
+        assertThat(response.getStatus()).isEqualTo(200);
+        assertThat(body).contains(expectedUrl);
+
+        response = Unirest.get(baseUrl + "/urls/2").asString();
+        assertThat(response.getStatus()).isEqualTo(404);
+    }
+
+    @Test
+    public void testNewUrl() {
+        HttpResponse<String> response = Unirest.post(baseUrl + "/urls")
+                .field("url", correctUrl)
+                .asString();
+        assertThat(response.getStatus()).isEqualTo(302);
+
+        response = Unirest.get(baseUrl + "/urls").asString();
+
+        assertThat(response.getStatus()).isEqualTo(200);
+        assertThat(response.getBody()).contains("Страница успешно добавлена");
+        assertThat(response.getBody()).contains(correctUrl);
+    }
+
+    @Test
+    public void testNewIncorrectUrl() {
+        HttpResponse<String> response = Unirest.post(baseUrl + "/urls")
+                .field("url", incorrectUrl)
+                .asString();
+        assertThat(response.getStatus()).isEqualTo(302);
+
+        response = Unirest.get(baseUrl).asString();
+        assertThat(response.getBody()).contains("Некорректный URL");
+
+        response = Unirest.get(baseUrl + "/urls").asString();
+        assertThat(response.getBody()).doesNotContain(incorrectUrl);
+    }
+
+    @Test
+    public void testUrlCheck() {
+        HttpResponse<String> response = Unirest.get(baseUrl + "/urls/1").asString();
+        assertThat(response.getStatus()).isEqualTo(200);
+        assertThat(response.getBody()).contains(expectedUrl);
+
+        HttpResponse responsePost = Unirest
+                .post(baseUrl + "/urls/1/checks")
+                .asEmpty();
+
+        assertThat(responsePost.getStatus()).isEqualTo(HttpServletResponse.SC_FOUND);
+
+        response = Unirest.get(baseUrl + "/urls/1").asString();
+        assertThat(response.getBody()).contains("Страница успешно проверена");
+        assertThat(response.getBody())
+                .contains("Поиск информации в интернете: веб страницы, картинки, видео и многое другое.");
+
     }
 
 }
