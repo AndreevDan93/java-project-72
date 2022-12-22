@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!--suppress ThymeleafVariablesResolveInspection -->
 <html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layouts/application.html}">
 
@@ -25,16 +26,16 @@
 
         <h2 class="mt-5">Проверки</h2>
         <form method="post" th:action="@{/urls/{id}/checks(id=*{getId()})}">
-            <button type="submit" class="btn btn-primary">Запустить проверку</button>
+            <button type="submit" class="btn btn-primary">Проверить</button>
         </form>
 
         <table class="table table-bordered table-hover mt-3">
             <thead>
             <tr><th class="col-1">ID</th>
                 <th class="col-1">Код ответа</th>
-                <th>title</th>
-                <th>h1</th>
-                <th>description</th>
+                <th>Титул</th>
+                <th>Заголовок</th>
+                <th>Описание</th>
                 <th class="col-2">Дата проверки</th>
             </tr>
             </thead>

@@ -17,10 +17,11 @@ import static io.javalin.apibuilder.ApiBuilder.post;
 
 public class App {
     private static final Logger APP_LOGGER = LoggerFactory.getLogger(App.class);
+
     private static int getPort() {
         String port = System.getenv().getOrDefault("PORT", "3000");
         APP_LOGGER.info(port);
-        return Integer.valueOf(port);
+        return Integer.parseInt(port);
     }
 
     private static String getMode() {
@@ -45,7 +46,8 @@ public class App {
     }
 
     private static void addRoutes(Javalin app) {
-        app.get("/", WelcomeController.welcome);
+        app.get("/", WelcomeController.getWelcome());
+
         app.routes(() -> {
             path("urls", () -> {
                 post(UrlController.getCreateUrl());
@@ -59,7 +61,7 @@ public class App {
     }
 
     public static Javalin getApp() {
-        APP_LOGGER.info("{}", isProduction());
+        APP_LOGGER.info("ENV is {}", isProduction());
         APP_LOGGER.info("{}", System.getenv().getOrDefault("APP_ENV", "development"));
         Javalin app = Javalin.create(config -> {
             if (!isProduction()) {
@@ -68,6 +70,7 @@ public class App {
             config.enableWebjars();
             JavalinThymeleaf.configure(getTemplateEngine());
         });
+
 
         addRoutes(app);
 

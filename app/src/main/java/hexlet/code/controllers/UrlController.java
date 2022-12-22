@@ -26,16 +26,16 @@ import java.util.stream.IntStream;
 
 public class UrlController {
     private static final Logger URL_CONTROLLER_LOGGER = LoggerFactory.getLogger(App.class);
+    private static final int URL_PER_PAGE = 10;
 
     @Getter
     private static Handler showUrls = ctx -> {
         int page = ctx.queryParamAsClass("page", Integer.class).getOrDefault(1);
-        int urlPerPage = 12;
-        int offset = (page - 1) * urlPerPage;
+        int offset = page * URL_PER_PAGE - URL_PER_PAGE;
 
         PagedList<Url> pagedUrl = new QUrl()
                 .setFirstRow(offset)
-                .setMaxRows(urlPerPage)
+                .setMaxRows(URL_PER_PAGE)
                 .orderBy()
                 .id.asc()
                 .findPagedList();
@@ -43,6 +43,7 @@ public class UrlController {
         List<Url> urls = pagedUrl.getList();
         int currentPage = pagedUrl.getPageIndex() + 1;
         int lastPage = pagedUrl.getTotalPageCount() + 1;
+
         List<Integer> pages = IntStream
                 .range(1, lastPage)
                 .boxed()
@@ -54,19 +55,22 @@ public class UrlController {
 
         ctx.render("urls/showUrls.html");
     };
+
     @Getter
     private static Handler createUrl = ctx -> {
         String normalizedUrl = getNormalizedUrl(ctx.formParam("url"));
 
-        URL_CONTROLLER_LOGGER.info("Проверка что AppUtil смог получить корретный URL");
+        URL_CONTROLLER_LOGGER.info("Попытка нормализовать URL {} получить корретный URL", normalizedUrl);
 
         if (Objects.isNull(normalizedUrl)) {
-            URL_CONTROLLER_LOGGER.info("AppUtil не смог нормализовать URL. Некорректный URL");
+            URL_CONTROLLER_LOGGER.info("Не удалось нормализовать URL");
             ctx.sessionAttribute("flash", "Некорректный URL");
             ctx.sessionAttribute("flash-type", "danger");
             ctx.redirect("/");
             return;
         }
+
+        URL_CONTROLLER_LOGGER.info("Удалось нормализовать URL {}", normalizedUrl);
 
         URL_CONTROLLER_LOGGER.info("Проверка что такого URL {} еще нет в БД", normalizedUrl);
 
@@ -76,13 +80,13 @@ public class UrlController {
 
         if (Objects.nonNull(databaseUrl)) {
             URL_CONTROLLER_LOGGER.info("Такой URL {} уже существует в БД", normalizedUrl);
-            ctx.sessionAttribute("flash", "Страница уже существует");
+            ctx.sessionAttribute("flash", "Ссылка уже существует");
             ctx.sessionAttribute("flash-type", "info");
             ctx.redirect("/urls");
             return;
         }
 
-        URL_CONTROLLER_LOGGER.info("URL {} прошел все проверки и будет добавлен", normalizedUrl);
+        URL_CONTROLLER_LOGGER.info("URL {} добавлен", normalizedUrl);
 
         Url url = new Url(normalizedUrl);
         url.save();
@@ -95,13 +99,19 @@ public class UrlController {
     private static Handler showUrl = ctx -> {
         long id = ctx.pathParamAsClass("id", Long.class).getOrDefault(null);
 
+        URL_CONTROLLER_LOGGER.info("Поиск URL по id {}", id);
+
         Url url = new QUrl()
                 .id.equalTo(id)
                 .findOne();
 
         if (Objects.isNull(url)) {
+            URL_CONTROLLER_LOGGER.info("URL не найден{}", id);
             throw new NotFoundResponse();
+
         }
+
+        URL_CONTROLLER_LOGGER.info("URL найден {}", id);
 
         ctx.attribute("url", url);
         ctx.render("urls/show.html");
@@ -109,15 +119,19 @@ public class UrlController {
     @Getter
     private static Handler checkUrl = ctx -> {
         long id = ctx.pathParamAsClass("id", Long.class).getOrDefault(null);
-        URL_CONTROLLER_LOGGER.info("ID {} полученный из контекста", id);
+
+        URL_CONTROLLER_LOGGER.info("Поиск URL по id {}", id);
 
         Url url = new QUrl()
                 .id.equalTo(id)
                 .findOne();
 
         if (Objects.isNull(url)) {
+            URL_CONTROLLER_LOGGER.info("URL не найден {}", id);
             throw new NotFoundResponse();
         }
+
+        URL_CONTROLLER_LOGGER.info("URL найден {}", id);
 
         URL_CONTROLLER_LOGGER.info("Попытка провести проверку URL {}", url.getName());
         try {
@@ -153,12 +167,12 @@ public class UrlController {
     private static String getNormalizedUrl(String url) {
         try {
             URL_CONTROLLER_LOGGER.info("Попытка нормализовать полученный URL {}", url);
-            URL receivedUrl = new URL(url);
+            URL inputURL = new URL(url);
 
-            String normalizedUrl = String.format("%s://%s", receivedUrl.getProtocol(), receivedUrl.getHost());
+            String normalizedUrl = String.format("%s://%s", inputURL.getProtocol(), inputURL.getHost());
 
-            if (receivedUrl.getPort() > 0) {
-                normalizedUrl = normalizedUrl + ":" + receivedUrl.getPort();
+            if (inputURL.getPort() > 0) {
+                normalizedUrl = normalizedUrl + ":" + inputURL.getPort();
             }
 
             URL_CONTROLLER_LOGGER.info("Получен URL {}", normalizedUrl);

@@ -1,9 +1,11 @@
 package hexlet.code.controllers;
 
 import io.javalin.http.Handler;
+import lombok.Getter;
 
 public class WelcomeController {
-    public static Handler welcome = ctx -> {
+    @Getter
+    private static Handler welcome = ctx -> {
         ctx.render("index.html");
     };
 }
