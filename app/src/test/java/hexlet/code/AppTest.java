@@ -19,9 +19,9 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 public final class AppTest {
     private static Javalin app;
     private static String baseUrl;
-    private static final String expectedUrl = "http://www.google.com";
-    private static final String correctUrl = "https://ru.hexlet.io";
-    private static final String incorrectUrl = "www.rock.ru";
+    private static final String EXPECTED_URL = "http://www.google.com";
+    private static final String CORRECT_URL = "https://ru.hexlet.io";
+    private static final String INCORRECT_URL = "www.rock.ru";
 
     @BeforeAll
     public static void beforeAll() {
@@ -39,7 +39,7 @@ public final class AppTest {
     public void beforeEach() {
         Database db = DB.getDefault();
         db.script().run("/truncate.sql");
-        Url url = new Url(expectedUrl);
+        Url url = new Url(EXPECTED_URL);
         url.save();
     }
 
@@ -55,7 +55,7 @@ public final class AppTest {
         String body = response.getBody();
 
         assertThat(response.getStatus()).isEqualTo(200);
-        assertThat(body).contains(expectedUrl);
+        assertThat(body).contains(EXPECTED_URL);
     }
 
     @Test
@@ -64,7 +64,7 @@ public final class AppTest {
 
         String body = response.getBody();
         assertThat(response.getStatus()).isEqualTo(200);
-        assertThat(body).contains(expectedUrl);
+        assertThat(body).contains(EXPECTED_URL);
 
         response = Unirest.get(baseUrl + "/urls/2").asString();
         assertThat(response.getStatus()).isEqualTo(404);
@@ -73,7 +73,7 @@ public final class AppTest {
     @Test
     public void testNewUrl() {
         HttpResponse<String> response = Unirest.post(baseUrl + "/urls")
-                .field("url", correctUrl)
+                .field("url", CORRECT_URL)
                 .asString();
         assertThat(response.getStatus()).isEqualTo(302);
 
@@ -81,13 +81,13 @@ public final class AppTest {
 
         assertThat(response.getStatus()).isEqualTo(200);
         assertThat(response.getBody()).contains("Страница успешно добавлена");
-        assertThat(response.getBody()).contains(correctUrl);
+        assertThat(response.getBody()).contains(CORRECT_URL);
     }
 
     @Test
     public void testNewIncorrectUrl() {
         HttpResponse<String> response = Unirest.post(baseUrl + "/urls")
-                .field("url", incorrectUrl)
+                .field("url", INCORRECT_URL)
                 .asString();
         assertThat(response.getStatus()).isEqualTo(302);
 
@@ -95,14 +95,14 @@ public final class AppTest {
         assertThat(response.getBody()).contains("Некорректный URL");
 
         response = Unirest.get(baseUrl + "/urls").asString();
-        assertThat(response.getBody()).doesNotContain(incorrectUrl);
+        assertThat(response.getBody()).doesNotContain(INCORRECT_URL);
     }
 
     @Test
     public void testUrlCheck() {
         HttpResponse<String> response = Unirest.get(baseUrl + "/urls/1").asString();
         assertThat(response.getStatus()).isEqualTo(200);
-        assertThat(response.getBody()).contains(expectedUrl);
+        assertThat(response.getBody()).contains(EXPECTED_URL);
 
         HttpResponse responsePost = Unirest
                 .post(baseUrl + "/urls/1/checks")
