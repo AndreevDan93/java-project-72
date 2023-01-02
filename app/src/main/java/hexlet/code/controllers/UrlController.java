@@ -12,7 +12,6 @@ import kong.unirest.Unirest;
 import kong.unirest.UnirestException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,11 +65,6 @@ public class UrlController {
             URL inputUrl = new URL(Objects.requireNonNull(normalizedUrl));
 
             normalizedUrl = inputUrl.getProtocol() + "://" + inputUrl.getAuthority();
-
-            if (inputUrl.getPort() > 0) {
-                normalizedUrl = normalizedUrl + ":" + inputUrl.getPort();
-            }
-
 
             LOGGER.debug("Проверка что такого URL {} еще нет в БД", normalizedUrl);
 
@@ -142,15 +136,17 @@ public class UrlController {
             HttpResponse<String> response = Unirest
                     .get(url.getName())
                     .asString();
+            String content = response.getBody();
 
+            Document body = Jsoup.parse(content);
             int statusCode = response.getStatus();
-            Document body = Jsoup.parse(response.getBody());
             String title = body.title();
-            Element h1FromBody = body.selectFirst("h1");
-            String h1 = Objects.nonNull(h1FromBody) ? h1FromBody.text() : "";
-            Element descriptionFromBody = body.selectFirst("meta[name=description]");
-            String description = Objects.nonNull(descriptionFromBody)
-                    ? descriptionFromBody.attr("content") : "";
+            String h1 = body.selectFirst("h1") != null
+                    ? Objects.requireNonNull(body.selectFirst("h1")).text()
+                    : "";
+            String description = body.selectFirst("meta[name=description]") != null
+                    ? Objects.requireNonNull(body.selectFirst("meta[name=description]")).attr("content")
+                    : "";
 
             UrlCheck checkedUrl = new UrlCheck(statusCode, title, h1, description, url);
             checkedUrl.save();
