@@ -15,17 +15,14 @@ import java.util.List;
 
 
 @Entity
+@Getter
 public final class Url extends Model {
-    @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    @Getter
     private String name;
-    @Getter
     @WhenCreated
     private Instant createdAt;
-    @Getter
     @OneToMany(cascade = CascadeType.ALL)
     private List<UrlCheck> urlChecks;
 

@@ -15,12 +15,13 @@ import static io.javalin.apibuilder.ApiBuilder.get;
 import static io.javalin.apibuilder.ApiBuilder.path;
 import static io.javalin.apibuilder.ApiBuilder.post;
 
+
 public class App {
-    private static final Logger APP_LOGGER = LoggerFactory.getLogger(App.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(App.class);
 
     private static int getPort() {
         String port = System.getenv().getOrDefault("PORT", "3000");
-        APP_LOGGER.info(port);
+        LOGGER.info(port);
         return Integer.parseInt(port);
     }
 
@@ -36,6 +37,7 @@ public class App {
 
         ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
         templateResolver.setPrefix("/templates/");
+        templateResolver.setSuffix(".html");
         templateEngine.addTemplateResolver(templateResolver);
 
         return templateEngine;
@@ -50,19 +52,19 @@ public class App {
 
         app.routes(() -> {
             path("urls", () -> {
-                post(UrlController.getCreateUrl());
-                get(UrlController.getShowUrls());
+                post(UrlController.createUrl);
+                get(UrlController.showUrls);
                 path("{id}", () -> {
-                    get(UrlController.getShowUrl());
-                    post("/checks", UrlController.getCheckUrl());
+                    get(UrlController.showUrl);
+                    post("/checks", UrlController.checkUrl);
                 });
             });
         });
     }
 
     public static Javalin getApp() {
-        APP_LOGGER.info("ENV is {}", isProduction());
-        APP_LOGGER.info("{}", System.getenv().getOrDefault("APP_ENV", "development"));
+        LOGGER.info("{}", System.getenv().getOrDefault("APP_ENV", "development"));
+
         Javalin app = Javalin.create(config -> {
             if (!isProduction()) {
                 config.enableDevLogging();

@@ -10,7 +10,6 @@ import io.javalin.http.NotFoundResponse;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import kong.unirest.UnirestException;
-import lombok.Getter;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -25,11 +24,12 @@ import java.util.stream.IntStream;
 
 
 public class UrlController {
-    private static final Logger URL_CONTROLLER_LOGGER = LoggerFactory.getLogger(App.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(App.class);
     private static final int URL_PER_PAGE = 10;
 
-    @Getter
-    private static Handler showUrls = ctx -> {
+
+    public static Handler showUrls = ctx -> {
+        LOGGER.debug("Попытка загрузить Urls");
         int page = ctx.queryParamAsClass("page", Integer.class).getOrDefault(1);
         int offset = page * URL_PER_PAGE - URL_PER_PAGE;
 
@@ -54,86 +54,90 @@ public class UrlController {
         ctx.attribute("urls", urls);
 
         ctx.render("urls/showUrls.html");
+        LOGGER.info("Urls выведены на экран");
     };
 
-    @Getter
-    private static Handler createUrl = ctx -> {
-        String normalizedUrl = getNormalizedUrl(ctx.formParam("url"));
 
-        URL_CONTROLLER_LOGGER.info("Попытка нормализовать URL {} получить корретный URL", normalizedUrl);
+    public static Handler createUrl = ctx -> {
+        String normalizedUrl = ctx.formParam("url");
 
-        if (Objects.isNull(normalizedUrl)) {
-            URL_CONTROLLER_LOGGER.info("Не удалось нормализовать URL");
+        try {
+            LOGGER.debug("Попытка нормализовать полученный URL {}", normalizedUrl);
+            URL inputUrl = new URL(Objects.requireNonNull(normalizedUrl));
+
+            normalizedUrl = inputUrl.getProtocol() + "://" + inputUrl.getAuthority();
+
+            if (inputUrl.getPort() > 0) {
+                normalizedUrl = normalizedUrl + ":" + inputUrl.getPort();
+            }
+
+
+            LOGGER.debug("Проверка что такого URL {} еще нет в БД", normalizedUrl);
+
+            Url databaseUrl = new QUrl()
+                    .name.equalTo(normalizedUrl)
+                    .findOne();
+
+            if (Objects.nonNull(databaseUrl)) {
+                LOGGER.debug("Такой URL {} уже существует в БД", normalizedUrl);
+                ctx.sessionAttribute("flash", "Ссылка уже существует");
+                ctx.sessionAttribute("flash-type", "info");
+                ctx.redirect("/urls");
+                return;
+            }
+
+            Url url = new Url(normalizedUrl);
+            url.save();
+
+        } catch (MalformedURLException e) {
+            LOGGER.debug("Не удалось нормализовать URL");
             ctx.sessionAttribute("flash", "Некорректный URL");
             ctx.sessionAttribute("flash-type", "danger");
             ctx.redirect("/");
             return;
         }
 
-        URL_CONTROLLER_LOGGER.info("Удалось нормализовать URL {}", normalizedUrl);
-
-        URL_CONTROLLER_LOGGER.info("Проверка что такого URL {} еще нет в БД", normalizedUrl);
-
-        Url databaseUrl = new QUrl()
-                .name.equalTo(normalizedUrl)
-                .findOne();
-
-        if (Objects.nonNull(databaseUrl)) {
-            URL_CONTROLLER_LOGGER.info("Такой URL {} уже существует в БД", normalizedUrl);
-            ctx.sessionAttribute("flash", "Ссылка уже существует");
-            ctx.sessionAttribute("flash-type", "info");
-            ctx.redirect("/urls");
-            return;
-        }
-
-        URL_CONTROLLER_LOGGER.info("URL {} добавлен", normalizedUrl);
-
-        Url url = new Url(normalizedUrl);
-        url.save();
-
         ctx.sessionAttribute("flash", "Страница успешно добавлена");
         ctx.sessionAttribute("flash-type", "success");
         ctx.redirect("/urls");
+        LOGGER.info("URL {} добавлен в DB", normalizedUrl);
     };
-    @Getter
-    private static Handler showUrl = ctx -> {
+
+    public static Handler showUrl = ctx -> {
         long id = ctx.pathParamAsClass("id", Long.class).getOrDefault(null);
 
-        URL_CONTROLLER_LOGGER.info("Поиск URL по id {}", id);
+        LOGGER.debug("Поиск URL по id {}", id);
 
         Url url = new QUrl()
                 .id.equalTo(id)
                 .findOne();
 
         if (Objects.isNull(url)) {
-            URL_CONTROLLER_LOGGER.info("URL не найден{}", id);
-            throw new NotFoundResponse();
+            LOGGER.debug("URL не найден{}", id);
+            throw new NotFoundResponse(String.format("Url with id=%d is not found", id));
 
         }
-
-        URL_CONTROLLER_LOGGER.info("URL найден {}", id);
 
         ctx.attribute("url", url);
         ctx.render("urls/show.html");
-    };
-    @Getter
-    private static Handler checkUrl = ctx -> {
-        long id = ctx.pathParamAsClass("id", Long.class).getOrDefault(null);
+        LOGGER.info("URL c id {} выведен на экран", id);
 
-        URL_CONTROLLER_LOGGER.info("Поиск URL по id {}", id);
+    };
+
+    public static Handler checkUrl = ctx -> {
+        Long id = ctx.pathParamAsClass("id", Long.class).getOrDefault(null);
+
+        LOGGER.debug("Поиск URL по id {}", id);
 
         Url url = new QUrl()
                 .id.equalTo(id)
                 .findOne();
 
         if (Objects.isNull(url)) {
-            URL_CONTROLLER_LOGGER.info("URL не найден {}", id);
-            throw new NotFoundResponse();
+            throw new NotFoundResponse(String.format("Url with id=%d is not found", id));
         }
 
-        URL_CONTROLLER_LOGGER.info("URL найден {}", id);
-
-        URL_CONTROLLER_LOGGER.info("Попытка провести проверку URL {}", url.getName());
+        LOGGER.debug("Попытка провести проверку URL {}", url.getName());
         try {
             HttpResponse<String> response = Unirest
                     .get(url.getName())
@@ -143,44 +147,25 @@ public class UrlController {
             Document body = Jsoup.parse(response.getBody());
             String title = body.title();
             Element h1FromBody = body.selectFirst("h1");
-            String h1 = Objects.nonNull(h1FromBody) ? h1FromBody.text() : null;
+            String h1 = Objects.nonNull(h1FromBody) ? h1FromBody.text() : "";
             Element descriptionFromBody = body.selectFirst("meta[name=description]");
             String description = Objects.nonNull(descriptionFromBody)
-                    ? descriptionFromBody.attr("content") : null;
+                    ? descriptionFromBody.attr("content") : "";
 
             UrlCheck checkedUrl = new UrlCheck(statusCode, title, h1, description, url);
-            URL_CONTROLLER_LOGGER.info("URL {} был проверен", url);
-
             checkedUrl.save();
+
+            LOGGER.info("URL {} был проверен", url);
 
             ctx.sessionAttribute("flash", "Страница успешно проверена");
             ctx.sessionAttribute("flash-type", "success");
 
         } catch (UnirestException e) {
-            URL_CONTROLLER_LOGGER.info("Не удалось проверить URL {}", url.getName());
+            LOGGER.debug("Не удалось проверить URL {}", url.getName());
             ctx.sessionAttribute("flash", "Не удалось проверить страницу");
             ctx.sessionAttribute("flash-type", "danger");
         }
         ctx.redirect("/urls/" + id);
     };
 
-    private static String getNormalizedUrl(String url) {
-        try {
-            URL_CONTROLLER_LOGGER.info("Попытка нормализовать полученный URL {}", url);
-            URL inputURL = new URL(url);
-
-            String normalizedUrl = String.format("%s://%s", inputURL.getProtocol(), inputURL.getHost());
-
-            if (inputURL.getPort() > 0) {
-                normalizedUrl = normalizedUrl + ":" + inputURL.getPort();
-            }
-
-            URL_CONTROLLER_LOGGER.info("Получен URL {}", normalizedUrl);
-
-            return normalizedUrl;
-
-        } catch (MalformedURLException e) {
-            return null;
-        }
-    }
 }
