@@ -1,7 +1,8 @@
-package hexlet.code;
+package hexlet.code.config;
 
 import io.ebean.annotation.Platform;
 import io.ebean.dbmigration.DbMigration;
+
 import java.io.IOException;
 
 public final class GenerateDbMigration {

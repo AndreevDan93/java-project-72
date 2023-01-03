@@ -85,7 +85,7 @@ test {
 
 task generateMigrations(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
-    mainClass = 'hexlet.code.GenerateDbMigration'
+    mainClass = 'hexlet.code.config.GenerateDbMigration'
 }
 task stage(dependsOn: ['clean', 'installDist'])
 installDist.mustRunAfter clean
