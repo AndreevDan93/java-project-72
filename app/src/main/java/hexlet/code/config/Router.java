@@ -10,7 +10,7 @@ import static io.javalin.apibuilder.ApiBuilder.post;
 
 public class Router {
     public static void addRoutes(Javalin app) {
-        app.get("/", WelcomeController.getWelcome());
+        app.get("/", WelcomeController.welcome);
 
         app.routes(() -> {
             path("urls", () -> {

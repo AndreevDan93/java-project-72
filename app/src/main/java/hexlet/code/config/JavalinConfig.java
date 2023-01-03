@@ -1,21 +1,18 @@
 package hexlet.code.config;
 
-import hexlet.code.App;
 import io.javalin.Javalin;
 import io.javalin.plugin.rendering.template.JavalinThymeleaf;
+import lombok.extern.log4j.Log4j2;
 import nz.net.ultraq.thymeleaf.layoutdialect.LayoutDialect;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.extras.java8time.dialect.Java8TimeDialect;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
-
+@Log4j2
 public class JavalinConfig {
-    private static final Logger LOGGER = LoggerFactory.getLogger(App.class);
 
     public static int getPort() {
         String port = System.getenv().getOrDefault("PORT", "3000");
-        LOGGER.info(port);
+        log.info(port);
         return Integer.parseInt(port);
     }
 
@@ -43,7 +40,7 @@ public class JavalinConfig {
 
 
     public static Javalin setup() {
-        LOGGER.info("{}", System.getenv().getOrDefault("APP_ENV", "development"));
+        log.info("{}", System.getenv().getOrDefault("APP_ENV", "development"));
 
         Javalin app = Javalin.create(config -> {
             if (!isProduction()) {
