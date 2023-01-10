@@ -50,7 +50,7 @@ public class UrlController {
         ctx.attribute("urls", urls);
 
         ctx.render("urls/showUrls.html");
-        log.info("Urls выведены на экран");
+        log.debug("Urls выведены на экран");
     };
 
 
@@ -80,6 +80,10 @@ public class UrlController {
             Url url = new Url(normalizedUrl);
             url.save();
 
+            ctx.sessionAttribute("flash", "Страница успешно добавлена");
+            ctx.sessionAttribute("flash-type", "success");
+            log.debug("URL {} добавлен в DB", normalizedUrl);
+
         } catch (MalformedURLException e) {
             log.debug("Не удалось нормализовать URL");
             ctx.sessionAttribute("flash", "Некорректный URL");
@@ -88,14 +92,13 @@ public class UrlController {
             return;
         }
 
-        ctx.sessionAttribute("flash", "Страница успешно добавлена");
-        ctx.sessionAttribute("flash-type", "success");
+
         ctx.redirect("/urls");
-        log.info("URL {} добавлен в DB", normalizedUrl);
+
     };
 
     public static Handler showUrl = ctx -> {
-        long id = ctx.pathParamAsClass("id", Long.class).getOrDefault(null);
+        long id = ctx.pathParamAsClass("id", Long.class).get();
 
         log.debug("Поиск URL по id {}", id);
 
@@ -111,7 +114,7 @@ public class UrlController {
 
         ctx.attribute("url", url);
         ctx.render("urls/show.html");
-        log.info("URL c id {} выведен на экран", id);
+        log.debug("URL c id {} выведен на экран", id);
 
     };
 
@@ -148,7 +151,7 @@ public class UrlController {
             UrlCheck checkedUrl = new UrlCheck(statusCode, title, h1, description, url);
             checkedUrl.save();
 
-            log.info("URL {} был проверен", url);
+            log.debug("URL {} был проверен", url);
 
             ctx.sessionAttribute("flash", "Страница успешно проверена");
             ctx.sessionAttribute("flash-type", "success");

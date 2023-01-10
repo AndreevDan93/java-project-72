@@ -1,5 +1,7 @@
 package hexlet.code.config;
 
+import hexlet.code.controllers.UrlController;
+import hexlet.code.controllers.WelcomeController;
 import io.javalin.Javalin;
 import io.javalin.plugin.rendering.template.JavalinThymeleaf;
 import lombok.extern.log4j.Log4j2;
@@ -7,12 +9,17 @@ import nz.net.ultraq.thymeleaf.layoutdialect.LayoutDialect;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.extras.java8time.dialect.Java8TimeDialect;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
+
+import static io.javalin.apibuilder.ApiBuilder.get;
+import static io.javalin.apibuilder.ApiBuilder.path;
+import static io.javalin.apibuilder.ApiBuilder.post;
+
 @Log4j2
 public class JavalinConfig {
 
     public static int getPort() {
         String port = System.getenv().getOrDefault("PORT", "3000");
-        log.info(port);
+        log.info("server port is" + port);
         return Integer.parseInt(port);
     }
 
@@ -38,6 +45,21 @@ public class JavalinConfig {
         return getMode().equals("production");
     }
 
+    public static void addRoutes(Javalin app) {
+        app.get("/", WelcomeController.welcome);
+
+        app.routes(() -> {
+            path("urls", () -> {
+                post(UrlController.createUrl);
+                get(UrlController.showUrls);
+                path("{id}", () -> {
+                    get(UrlController.showUrl);
+                    post("/checks", UrlController.checkUrl);
+                });
+            });
+        });
+    }
+
 
     public static Javalin setup() {
         log.info("{}", System.getenv().getOrDefault("APP_ENV", "development"));
@@ -51,7 +73,7 @@ public class JavalinConfig {
         });
 
 
-        Router.addRoutes(app);
+        addRoutes(app);
 
         app.before(ctx -> {
             ctx.attribute("ctx", ctx);
