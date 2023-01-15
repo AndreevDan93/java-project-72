@@ -159,7 +159,7 @@ public class UrlController {
             ctx.sessionAttribute("flash", "Не удалось проверить страницу");
             ctx.sessionAttribute("flash-type", "danger");
         }
-        
+
         ctx.redirect("/urls/" + id);
     };
 

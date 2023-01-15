@@ -114,7 +114,6 @@ public final class AppTest {
         assertThat(response.getBody()).contains("Страница успешно проверена");
         assertThat(response.getBody())
                 .contains("Example Domain");
-
     }
 
 }
