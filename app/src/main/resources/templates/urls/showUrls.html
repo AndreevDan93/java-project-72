@@ -40,13 +40,13 @@
             <nav aria-label="Page navigation" th:if="${#lists.size(pages)}">
                 <ul class="pagination justify-content-center mt-5">
                     <li th:class="'page-item' + ${currentPage <= 1 ? ' disabled' : ''}">
-                        <a class="page-link" th:href="@{/urls(page=${currentPage - 1})}">Previous</a>
+                        <a class="page-link" th:href="@{/urls(page=${currentPage - 1})}">Назад</a>
                     </li>
                     <li th:each="page : ${pages}" th:class="'page-item' + ${currentPage == page ? ' active' : ''}">
                         <a class="page-link" th:href="@{/urls(page=${page})}" th:text="${page}"></a>
                     </li>
                     <li th:class="'page-item' + ${currentPage >= #lists.size(pages) ? ' disabled' : ''}">
-                        <a class="page-link" th:href="@{/urls(page=${currentPage + 1})}">Next</a>
+                        <a class="page-link" th:href="@{/urls(page=${currentPage + 1})}">Вперед</a>
                     </li>
                 </ul>
             </nav>
