@@ -75,7 +75,6 @@ public class JavalinConfig {
             JavalinThymeleaf.configure(getTemplateEngine());
         });
 
-
         addRoutes(app);
 
         app.before(ctx -> {

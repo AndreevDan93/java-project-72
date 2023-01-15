@@ -23,7 +23,6 @@ import java.util.stream.IntStream;
 public class UrlController {
     private static final int URL_PER_PAGE = 10;
 
-
     public static Handler showUrls = ctx -> {
         log.debug("Попытка загрузить Urls");
         int page = ctx.queryParamAsClass("page", Integer.class).getOrDefault(1);
@@ -92,9 +91,7 @@ public class UrlController {
             return;
         }
 
-
         ctx.redirect("/urls");
-
     };
 
     public static Handler showUrl = ctx -> {
@@ -115,7 +112,6 @@ public class UrlController {
         ctx.attribute("url", url);
         ctx.render("urls/show.html");
         log.debug("URL c id {} выведен на экран", id);
-
     };
 
     public static Handler checkUrl = ctx -> {
@@ -163,6 +159,7 @@ public class UrlController {
             ctx.sessionAttribute("flash", "Не удалось проверить страницу");
             ctx.sessionAttribute("flash-type", "danger");
         }
+        
         ctx.redirect("/urls/" + id);
     };
 

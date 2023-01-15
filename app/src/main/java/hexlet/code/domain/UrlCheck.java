@@ -3,6 +3,7 @@ package hexlet.code.domain;
 import io.ebean.Model;
 import io.ebean.annotation.WhenCreated;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -14,6 +15,7 @@ import java.time.Instant;
 
 @Entity
 @Getter
+@NoArgsConstructor
 public final class UrlCheck extends Model {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
