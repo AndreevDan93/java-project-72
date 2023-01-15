@@ -16,15 +16,18 @@ import static io.javalin.apibuilder.ApiBuilder.post;
 
 @Log4j2
 public class JavalinConfig {
+    private static final String DEFAULT_PORT = "3000";
+    private static final String ENV_DEV = "development";
+    private static final String ENV_PROD = "production";
 
     public static int getPort() {
-        String port = System.getenv().getOrDefault("PORT", "3000");
+        String port = System.getenv().getOrDefault("PORT", DEFAULT_PORT);
         log.info("server port is" + port);
         return Integer.parseInt(port);
     }
 
     private static String getMode() {
-        return System.getenv().getOrDefault("APP_ENV", "development");
+        return System.getenv().getOrDefault("APP_ENV", ENV_DEV);
     }
 
     private static TemplateEngine getTemplateEngine() {
@@ -42,7 +45,7 @@ public class JavalinConfig {
     }
 
     private static boolean isProduction() {
-        return getMode().equals("production");
+        return getMode().equals(ENV_PROD);
     }
 
     public static void addRoutes(Javalin app) {

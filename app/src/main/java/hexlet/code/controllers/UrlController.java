@@ -141,14 +141,17 @@ public class UrlController {
             Document body = Jsoup.parse(content);
             int statusCode = response.getStatus();
             String title = body.title();
-            String h1 = body.selectFirst("h1") != null
-                    ? Objects.requireNonNull(body.selectFirst("h1")).text()
-                    : "";
+
+//            String h1 = body.selectFirst("h1") != null
+//                    ? Objects.requireNonNull(body.selectFirst("h1")).text()
+//                    : "";
+
             String description = body.selectFirst("meta[name=description]") != null
                     ? Objects.requireNonNull(body.selectFirst("meta[name=description]")).attr("content")
                     : "";
 
-            UrlCheck checkedUrl = new UrlCheck(statusCode, title, h1, description, url);
+//            UrlCheck checkedUrl = new UrlCheck(statusCode, title, h1, description, url);
+            UrlCheck checkedUrl = new UrlCheck(statusCode, title, description, url);
             checkedUrl.save();
 
             log.debug("URL {} был проверен", url);
